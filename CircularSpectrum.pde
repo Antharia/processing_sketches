@@ -13,7 +13,7 @@ void setup()
 {
   size(1280, 720);
   background(255);
-  track = new SoundFile(this, "track1.wav");
+  track = new SoundFile(this, "filename.wav"); // change filename
   track.play();
   fft = new FFT(this, bands);
   fft.input(track);
