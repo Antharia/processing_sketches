@@ -1,3 +1,11 @@
+import oscP5.*;
+import netP5.*;
+
+OscP5 osc;
+NetAddress remote;
+
+OscMessage[] messages;
+
 int nbNodes;
 Node[] nodes;
 float x, y;
@@ -6,7 +14,7 @@ float longest;
 int foreground, background;
 
 void setup() {
-  size(1000, 1000);
+  size(800, 600);
   foreground = 50;
   background = 240;
   nbNodes = 12;
@@ -23,7 +31,12 @@ void setup() {
     nodes[i] = new Node(i, x + width/2, y + height/2);
     angle += TWO_PI / nbNodes;
   }
-  longest = radius * 2; //dist(width/2, height/2, nodes[0].x, nodes[0].y);
+  longest = radius * 2 - radius / 5;
+  
+  // OSC SETUP
+  osc = new OscP5(this, 4444);
+  remote = new NetAddress("127.0.0.1", 7777);
+  messages = new OscMessage[nbNodes];
 }
 
 void draw() {
@@ -35,14 +48,18 @@ void draw() {
     nodes[i].display();
     stroke(foreground);
     line(nodes[i].x, nodes[i].y, mouseX, mouseY);
-    
+
     fill(foreground);
     rect(10, i*10+10, map(nodes[i].value, 0, longest, 0, 50), 5);
     textSize(8);
-    //float gui_value = round(norm(nodes[i].value, 0, longest)*1000)/100;
     float gui_value = round(map(nodes[i].value, 0, longest, 0, 1000));
     gui_value /= 10;
     text(gui_value + "%", 63, i*10+16);
+    
+    // OSC
+    messages[i] = new OscMessage("/node" + i);
+    messages[i].add(norm(nodes[i].value, 0, longest));
+    osc.send(messages[i], remote);
   }
 
   stroke(foreground);
